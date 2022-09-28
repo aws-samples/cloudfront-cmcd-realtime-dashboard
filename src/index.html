@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <title>HLS.JS with CMCD</title>
+  </head>
+  <body>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <video preload="none" id="earth" controls muted width="640" height="480"> </video>
+
+<script>
+    if (Hls.isSupported()) {
+      var video2 = document.getElementById('earth');
+      var config = {
+	      maxBufferLength: 30,
+	      maxMaxBufferLength: 30,
+      	  cmcd: true,
+      	  contentId: 'ocean-demo-video'
+      };
+
+      var hls2 = new Hls(config);
+      hls2.attachMedia(video2);
+      hls2.on(Hls.Events.MEDIA_ATTACHED, function () {
+        console.log("video and hls.js are now bound together !");
+        hls2.loadSource("/video/hls/buck_bunny/Big_BuckBunny_5mins.m3u8");
+        hls2.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+          console.log("manifest loaded, found " + data.levels.length + " quality level");
+        });
+      });
+    }
+  </script>
+  </body>
+</html>
