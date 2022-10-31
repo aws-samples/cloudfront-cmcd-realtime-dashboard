@@ -6,12 +6,13 @@ sudo apt -f install -y
 sudo apt install python3-pip -y
 yes | pip3 install selenium
 yes | pip3 install requests -U
-wget https://chromedriver.storage.googleapis.com/104.0.5112.79/chromedriver_linux64.zip
-sudo apt install unzip -y
-unzip chromedriver_linux64.zip
-sudo mv chromedriver /usr/bin/chromedriver
-sudo chown root:root /usr/bin/chromedriver
-sudo chmod +x /usr/bin/chromedriver
+#wget https://chromedriver.storage.googleapis.com/104.0.5112.79/chromedriver_linux64.zip
+#sudo apt install unzip -y
+#unzip chromedriver_linux64.zip
+#sudo mv chromedriver /usr/bin/chromedriver
+#sudo chown root:root /usr/bin/chromedriver
+#sudo chmod +x /usr/bin/chromedriver
+sudo apt install chromium-chromedriver -y
 wget ${url}/hlsjs.py
 chmod +x hlsjs.py
 nohup /home/ubuntu/hlsjs.py -url ${url} -ua ${ua} -tput ${tput} > /dev/null 2>&1 &

@@ -5,6 +5,7 @@ import argparse
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 chrome_options = Options()
 chrome_options.headless = True
@@ -20,7 +21,11 @@ if args.ua is not None:
     chrome_arg_ua = "--user-agent={}".format(args.ua)
     chrome_options.add_argument(chrome_arg_ua)
 
-driver = webdriver.Chrome(options=chrome_options)
+#driver = webdriver.Chrome(options=chrome_options)
+path = '/usr/lib/chromium-browser/chromedriver'
+s = Service(path)
+driver = webdriver.Chrome(service=s, options=chrome_options)
+
 
 if args.tput is not None:
     driver.set_network_conditions(
