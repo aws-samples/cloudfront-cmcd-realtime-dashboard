@@ -39,7 +39,7 @@
       "type": "datasource",
       "id": "grafana-timestream-datasource",
       "name": "Amazon Timestream",
-      "version": "1.5.2"
+      "version": "2.3.0"
     },
     {
       "type": "panel",
@@ -83,7 +83,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1661339134338,
+  "iteration": 1667293639524,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -143,7 +143,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "SELECT COUNT (DISTINCT(cmcd_sid)) AS Plays\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})",
+          "rawQuery": "SELECT COUNT (DISTINCT(cmcd_sid)) AS Plays\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -202,7 +202,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "SELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) / (1.0 * COUNT(x_edge_request_id)) * 100\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND x_edge_detailed_result_type IN (${result_type:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})",
+          "rawQuery": "SELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) / (1.0 * COUNT(x_edge_request_id)) * 100\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND x_edge_detailed_result_type IN (${result_type:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -269,7 +269,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "SELECT avg(cmcd_br) AS Encoded_Bitrate\n-- approx_percentile(cmcd_br, $percentile/100) AS Encoded_Bitrate\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_br is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND (cmcd_ot = 'v' OR cmcd_ot = 'av')",
+          "rawQuery": "SELECT avg(cmcd_br) AS Encoded_Bitrate\n-- approx_percentile(cmcd_br, $percentile/100) AS Encoded_Bitrate\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_br is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND (cmcd_ot = 'v' OR cmcd_ot = 'av')\n      AND COALESCE (asn, '') IN (${asn:singlequote})",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -335,7 +335,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "\nWITH CTE AS (\n      SELECT SUM(cmcd_d) as duration, cmcd_sid\n      FROM \"cmcd-db\".\"cmcd-table\"\n      WHERE $__timeFilter\n            AND cmcd_sid is not NULL\n            AND c_country IN (${country:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND (cmcd_ot = 'v' OR cmcd_ot = 'av')\n      GROUP BY cmcd_sid\n) \nSELECT AVG(duration)\nFROM CTE\n",
+          "rawQuery": "\nWITH CTE AS (\n      SELECT SUM(cmcd_d) as duration, cmcd_sid\n      FROM \"cmcd-db\".\"cmcd-table\"\n      WHERE $__timeFilter\n            AND cmcd_sid is not NULL\n            AND c_country IN (${country:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND (cmcd_ot = 'v' OR cmcd_ot = 'av')\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY cmcd_sid\n) \nSELECT AVG(duration)\nFROM CTE\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -413,7 +413,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "\nSELECT AVG(cmcd_mtp)\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_mtp is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND x_edge_detailed_result_type IN (${result_type:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})",
+          "rawQuery": "\nSELECT AVG(cmcd_mtp)\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_mtp is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND x_edge_detailed_result_type IN (${result_type:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -493,7 +493,7 @@
             "uid": "${DS_AMAZON_TIMESTREAM}"
           },
           "measure": "MULTI",
-          "rawQuery": "\n    SELECT COUNT(DISTINCT cmcd_sid) AS Plays, cmcd_sf AS streaming_format\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sf IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND 'true' in (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n    GROUP BY cmcd_sf\n\n",
+          "rawQuery": "\n    SELECT COUNT(DISTINCT cmcd_sid) AS Plays, cmcd_sf AS streaming_format\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sf IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND 'true' in (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY cmcd_sf\n\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -592,7 +592,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n    SELECT c_country as Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_bl, $percentile/100) as buff_length\n    FROM $__database.$__table\n    WHERE $__timeFilter\n        AND cmcd_bl is not Null\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n    GROUP BY c_country, BIN(time, ${interval})\n    ORDER BY bin_time\n)\nSELECT CREATE_TIME_SERIES(bin_time, buff_length) as Buffer_Length, Country\nFROM binned_query\nGROUP BY Country",
+          "rawQuery": "WITH binned_query AS (\n    SELECT c_country as Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_bl, $percentile/100) as buff_length\n    FROM $__database.$__table\n    WHERE $__timeFilter\n        AND cmcd_bl is not Null\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY c_country, BIN(time, ${interval})\n    ORDER BY bin_time\n)\nSELECT CREATE_TIME_SERIES(bin_time, buff_length) as Buffer_Length, Country\nFROM binned_query\nGROUP BY Country",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -689,7 +689,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n    SELECT c_country AS Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_mtp, $percentile/100) AS tput\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_mtp is not Null\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\nGROUP BY c_country, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, tput) as Measured_Throughput, Country\nFROM binned_query\nGROUP BY Country",
+          "rawQuery": "WITH binned_query AS (\n    SELECT c_country AS Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_mtp, $percentile/100) AS tput\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_mtp is not Null\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY c_country, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, tput) as Measured_Throughput, Country\nFROM binned_query\nGROUP BY Country",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -789,7 +789,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n    SELECT c_country AS Country, BIN(time, ${interval}) AS bin_time, \n    COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) as bs\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\nGROUP BY c_country, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, bs) as Buffer_Starvation, Country\nFROM binned_query\nGROUP BY Country",
+          "rawQuery": "WITH binned_query AS (\n    SELECT c_country AS Country, BIN(time, ${interval}) AS bin_time, \n    COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) as bs\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY c_country, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, bs) as Buffer_Starvation, Country\nFROM binned_query\nGROUP BY Country",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -901,7 +901,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n--SELECT BIN(time, ${interval}) AS bin_time, sum(sc_bytes) * 1.0 as Bytes_Downloaded\nSELECT BIN(time, 1s) AS bin_time, sum(sc_bytes) * 1.0 as Bytes_Downloaded\nFROM $__database.$__table\nWHERE $__timeFilter\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n-- GROUP BY BIN(time, ${interval})\nGROUP BY BIN(time, 1s)\n)\n-- SELECT bin_time, (Bytes_Downloaded * 8 / 1048576) / 60 as Throughput\nSELECT bin_time, (Bytes_Downloaded * 8 / 1048576)  as Throughput\nFROM binned_query\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH binned_query AS (  \n        SELECT BIN(time, 1s) AS bin_time, sum(sc_bytes) * 1.0 as Bytes_Downloaded\n        FROM $__database.$__table\n        WHERE $__timeFilter\n                AND c_country IN (${country:singlequote})\n                AND 'true' IN (${device:csv})\n                AND x_host_header IN (${distribution:singlequote})\n                AND COALESCE (asn, '') IN (${asn:singlequote})         \nGROUP BY BIN(time, 1s)\n)\n\nSELECT bin_time, (Bytes_Downloaded * 8 / 1048576)  as Throughput\nFROM binned_query\nORDER BY bin_time DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1004,7 +1004,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "\nWITH binned_query AS (\n      SELECT BIN(time, 1s) AS bin_time, avg(cmcd_mtp) as measured_tput, cmcd_sid\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_mtp is NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n      GROUP BY BIN(time, 1s), cmcd_sid\n)\n\nSELECT bin_time, sum(measured_tput) as measured_tput_total\nFROM binned_query\nGROUP BY bin_time\nORDER BY bin_time DESC\n\n",
+          "rawQuery": "\nWITH binned_query AS (\n      SELECT BIN(time, 1s) AS bin_time, avg(cmcd_mtp) as measured_tput, cmcd_sid\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_mtp is NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY BIN(time, 1s), cmcd_sid\n)\n\nSELECT bin_time, sum(measured_tput) as measured_tput_total\nFROM binned_query\nGROUP BY bin_time\nORDER BY bin_time DESC\n\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1093,7 +1093,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "--WITH binned_query AS (\nSELECT BIN(time, 1s) AS bin_time, COUNT(x_edge_request_id) AS Requests\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\nGROUP BY BIN(time, 1s)\nORDER BY BIN(time, 1s) DESC\n--)\n--SELECT bin_time, (Bytes_Downloaded * 8 / 1048576) / 60 as Throughput\n--FROM binned_query\n--ORDER BY bin_time DESC\n",
+          "rawQuery": "\nSELECT BIN(time, 1s) AS bin_time, COUNT(x_edge_request_id) AS Requests\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY BIN(time, 1s)\nORDER BY BIN(time, 1s) DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1182,7 +1182,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\nSELECT BIN(time, ${interval}) AS bin_time, sum(sc_bytes) * 1.0 as Bytes_Downloaded\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND x_edge_response_result_type in ('Miss', 'PrefetchMiss', 'RefreshHit')\nGROUP BY BIN(time, ${interval})\n)\nSELECT bin_time, (Bytes_Downloaded * 8 / 1048576) / 60 as Throughput\nFROM binned_query\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH binned_query AS (\nSELECT BIN(time, ${interval}) AS bin_time, sum(sc_bytes) * 1.0 as Bytes_Downloaded\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND x_edge_response_result_type in ('Miss', 'PrefetchMiss', 'RefreshHit')\n      AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY BIN(time, ${interval})\n)\nSELECT bin_time, (Bytes_Downloaded * 8 / 1048576) / 60 as Throughput\nFROM binned_query\nORDER BY bin_time DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1302,7 +1302,7 @@
             "uid": "${DS_AMAZON_TIMESTREAM}"
           },
           "measure": "MULTI",
-          "rawQuery": "SELECT COUNT(DISTINCT(cmcd_sid)) as Plays, c_country as Country\nFROM $__database.$__table\nWHERE $__timeFilter\n--      AND c_country != '-'\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\nGROUP BY c_country",
+          "rawQuery": "SELECT COUNT(DISTINCT(cmcd_sid)) as Plays, c_country as Country\nFROM $__database.$__table\nWHERE $__timeFilter\n--      AND c_country != '-'\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY c_country",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1433,7 +1433,7 @@
             "uid": "${DS_AMAZON_TIMESTREAM}"
           },
           "measure": "MULTI",
-          "rawQuery": "WITH CTE as (\n      SELECT regexp_extract(x_edge_location, '([A-Z]{3}).*', 1) as PoP\n             ,COUNT(DISTINCT(cmcd_sid)) as CNT\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n      GROUP BY x_edge_location\n)\nSELECT sum(CNT), PoP\nFROM CTE\nGROUP BY PoP",
+          "rawQuery": "WITH CTE as (\n      SELECT regexp_extract(x_edge_location, '([A-Z]{3}).*', 1) as PoP\n             ,COUNT(DISTINCT(cmcd_sid)) as CNT\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY x_edge_location\n)\nSELECT sum(CNT), PoP\nFROM CTE\nGROUP BY PoP",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1523,7 +1523,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "\nSELECT count_if (x_edge_response_result_type = 'Hit') / (1.0 * count (x_edge_request_id)) * 100 AS chr\n     ,BIN(time, ${interval})\nFROM $__database.$__table\nWHERE $__timeFilter\n     AND c_country IN (${country:singlequote})\n     AND 'true' IN (${device:csv})\n     AND x_host_header IN (${distribution:singlequote})\nGROUP BY BIN(time, ${interval})\nORDER BY BIN(time, ${interval}) DESC\n",
+          "rawQuery": "\nSELECT count_if (x_edge_response_result_type = 'Hit') / (1.0 * count (x_edge_request_id)) * 100 AS chr\n     ,BIN(time, ${interval})\nFROM $__database.$__table\nWHERE $__timeFilter\n     AND c_country IN (${country:singlequote})\n     AND 'true' IN (${device:csv})\n     AND x_host_header IN (${distribution:singlequote})\n     AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY BIN(time, ${interval})\nORDER BY BIN(time, ${interval}) DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1608,7 +1608,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\nSELECT x_edge_location AS Edge, BIN(time, ${interval}) AS bin_time, sum(sc_bytes) AS Bytes\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\nGROUP BY x_edge_location, BIN(time, ${interval})\norder by bin_time DESC\n)\nSELECT Edge, CREATE_TIME_SERIES(bin_time, Bytes) AS Bytes_Downloaded\nFROM binned_query\nGROUP BY Edge",
+          "rawQuery": "WITH binned_query AS (\nSELECT x_edge_location AS Edge, BIN(time, ${interval}) AS bin_time, sum(sc_bytes) AS Bytes\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY x_edge_location, BIN(time, ${interval})\norder by bin_time DESC\n)\nSELECT Edge, CREATE_TIME_SERIES(bin_time, Bytes) AS Bytes_Downloaded\nFROM binned_query\nGROUP BY Edge",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1626,7 +1626,7 @@
       "type": "barchart"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
@@ -1771,6 +1771,26 @@
         "type": "query"
       },
       {
+        "current": {},
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "${DS_AMAZON_TIMESTREAM}"
+        },
+        "definition": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
+        "hide": 0,
+        "includeAll": true,
+        "label": "ASN",
+        "multi": false,
+        "name": "asn",
+        "options": [],
+        "query": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
         "current": {
           "selected": true,
           "text": "All",
@@ -1871,6 +1891,10 @@
       },
       {
         "current": {},
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "${DS_AMAZON_TIMESTREAM}"
+        },
         "definition": "SELECT DISTINCT (cs_protocol), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY cs_protocol\nORDER BY CNT DESC",
         "hide": 0,
         "includeAll": true,
@@ -1883,11 +1907,14 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query",
-        "datasource": "${DS_AMAZON_TIMESTREAM}"
+        "type": "query"
       },
       {
         "current": {},
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "${DS_AMAZON_TIMESTREAM}"
+        },
         "definition": "SELECT DISTINCT (cs_protocol_version), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY cs_protocol_version\nORDER BY CNT DESC",
         "hide": 0,
         "includeAll": true,
@@ -1900,19 +1927,18 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query",
-        "datasource": "${DS_AMAZON_TIMESTREAM}"
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "QoE",
   "uid": "LWk3kZ2nk",
-  "version": 5,
+  "version": 2,
   "weekStart": ""
 }

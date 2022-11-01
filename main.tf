@@ -166,7 +166,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 }
 
 resource "aws_kinesis_stream" "cf_real_time_logs" {
-  name        = "${var.solution_prefix}-cf-real-time-logs"
+  name = "${var.solution_prefix}-cf-real-time-logs-43fields"
   stream_mode_details {
     stream_mode = "ON_DEMAND"
   }
@@ -190,7 +190,7 @@ resource "aws_iam_role" "cf_real_time_logs" {
 }
 
 resource "aws_iam_role_policy" "cf_real_time_logs" {
-  name = "cf-real-time-logs"
+  name = "cf-real-time-logs" #new policy that includes 3 new fields: origin-lbl, origin-fbl, asn
   role = aws_iam_role.cf_real_time_logs.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -253,7 +253,10 @@ resource "aws_cloudfront_realtime_log_config" "cf_real_time_logs" {
     "cache-behavior-path-pattern",
     "cs-headers",
     "cs-header-names",
-    "cs-headers-count"
+    "cs-headers-count",
+    "origin-fbl",
+    "origin-lbl",
+    "asn"
   ]
 
   endpoint {
@@ -406,6 +409,11 @@ resource "aws_lambda_function" "cmcd-log-processor" {
       timestream_table = aws_timestreamwrite_table.cmcd-table.table_name
     }
   }
+
+  depends_on = [
+    aws_kinesis_stream.cf_real_time_logs
+  ]
+
 }
 
 # Kinesis Lambda Trigger
@@ -466,6 +474,7 @@ resource "aws_iam_policy" "cf_logs_grafana_timestream_policy" {
     ]
   })
 }
+
 resource "aws_iam_role" "cf_logs_grafana_role" {
   name = "cf-logs-grafana-role"
   assume_role_policy = jsonencode({
@@ -503,7 +512,6 @@ resource "aws_grafana_role_association" "cf_grafana_admins" {
   user_ids     = [var.grafana_sso_admin_user_id] # depends on the targer account, should passed as a parameter, e.g. "90676a9ff8-0fb3fe58-d982-4a25-9ee5-c2a963784c5d"
   workspace_id = aws_grafana_workspace.cf_grafana.id
 }
-
 
 # Deploy clients
 resource "aws_lightsail_instance" "desktop-client-dub" {
@@ -605,7 +613,6 @@ resource "aws_lightsail_instance" "throttled-client-cdg" {
                               tput= 60 })
 
 }
-
 
 output "distribution_domain_name" {
   value = aws_cloudfront_distribution.distribution.domain_name

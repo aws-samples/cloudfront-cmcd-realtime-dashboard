@@ -35,24 +35,26 @@ Both dashboards have Variables that can be used to filter in/out the data using 
 - AWS CLI with an active profile
 
 ## Provisioning
-First, set up profile to be used to deploy solution, for example:
+- First, set up profile to be used to deploy solution, for example:
+
 `export AWS_PROFILE=CMCD-demo`
 
+- Zip Lambda function
+
+`cd lambda && zip -r cmcd-log-processor.zip cmcd-log-processor.py && cd ..`
+
+- Init Terraform
+
+`terraform init`
+
+Run Terraform with the following parameters: 
+1. `deploy-to-region` - where solution will be deployed. Should be an AWS region where Timestream and Grafana available
+2. `grafana_sso_organizational_units` - org unit ID to use for Grafana SSO authentication
+3. `grafana_sso_admin_user_id` - a user ID to use as Grafana admin
+4. `solution_prefix` - a unique prefix will be added to solution resource names
+
+ Following variables are just examples:
 ```shell
-# zip lambda
-cd lambda && zip -r cmcd-log-processor.zip cmcd-log-processor.py && cd ..
-
-# init Terraform
-terraform init
-
-# apply Terraform with the following parameters: 
-# 1. deploy-to-region - where solution will be deployed. Check where Timestream and Grafana available
-# 2. grafana_sso_organizational_units - org unit ID to use for Grafana SSO authentication
-# 3. grafana_sso_admin_user_id - a user ID to use as Grafana admin
-# 4. solution_prefix - a unique prefix will be added to solution resource names
-# 
-# Following variables are just examples:
-
 terraform apply \
 -var "deploy-to-region=eu-west-1" \
 -var "solution_prefix=cmcd" \

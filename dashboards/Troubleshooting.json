@@ -21,7 +21,7 @@
       "type": "datasource",
       "id": "grafana-timestream-datasource",
       "name": "Amazon Timestream",
-      "version": "1.5.2"
+      "version": "2.3.0"
     },
     {
       "type": "panel",
@@ -65,7 +65,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1664033461549,
+  "iteration": 1667293963517,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -148,7 +148,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
+          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n          \n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -240,7 +240,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_events AS (\n      SELECT time\n            ,cmcd_bs\n            ,x_edge_request_id\n            ,x_edge_detailed_result_type AS detailed_result_type \n            ,LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as detailed_result_type_prev\n            ,LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as http_status_prev\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n)\n\nSELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END)\n      ,BIN(time, ${interval})  \nFROM rebuffering_events\nWHERE detailed_result_type_prev IN (${result_type:singlequote}, Null)\n      AND http_status_prev IN (${status_code:singlequote}, Null)\nGROUP BY BIN(time, ${interval}) \nORDER BY BIN(time, ${interval}) DESC\n",
+          "rawQuery": "WITH rebuffering_events AS (\n      SELECT time\n            ,cmcd_bs\n            ,x_edge_request_id\n            ,x_edge_detailed_result_type AS detailed_result_type \n            ,LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as detailed_result_type_prev\n            ,LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as http_status_prev\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n)\n\nSELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END)\n      ,BIN(time, ${interval})  \nFROM rebuffering_events\nWHERE detailed_result_type_prev IN (${result_type:singlequote}, Null)\n      AND http_status_prev IN (${status_code:singlequote}, Null)\nGROUP BY BIN(time, ${interval}) \nORDER BY BIN(time, ${interval}) DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -332,7 +332,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_events AS (\n      SELECT time\n            ,cmcd_bs\n            ,x_edge_request_id\n            ,x_edge_detailed_result_type AS detailed_result_type \n            ,LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as detailed_result_type_prev\n            ,LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as http_status_prev\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n)\n\nSELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) / (1.0 * COUNT(x_edge_request_id)) * 100 as rebuffering_events\n      ,BIN(time, ${interval})  \nFROM rebuffering_events\nWHERE detailed_result_type_prev IN (${result_type:singlequote}, Null)\n      AND http_status_prev IN (${status_code:singlequote}, Null)\nGROUP BY BIN(time, ${interval}) \nORDER BY BIN(time, ${interval}) DESC\n",
+          "rawQuery": "WITH rebuffering_events AS (\n      SELECT time\n            ,cmcd_bs\n            ,x_edge_request_id\n            ,x_edge_detailed_result_type AS detailed_result_type \n            ,LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as detailed_result_type_prev\n            ,LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) as http_status_prev\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n)\n\nSELECT COUNT (CASE WHEN cmcd_bs = true THEN 1 ELSE Null END) / (1.0 * COUNT(x_edge_request_id)) * 100 as rebuffering_events\n      ,BIN(time, ${interval})  \nFROM rebuffering_events\nWHERE detailed_result_type_prev IN (${result_type:singlequote}, Null)\n      AND http_status_prev IN (${status_code:singlequote}, Null)\nGROUP BY BIN(time, ${interval}) \nORDER BY BIN(time, ${interval}) DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -471,7 +471,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 469
+                "value": 438
               }
             ]
           },
@@ -495,7 +495,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 506
+                "value": 470
               }
             ]
           },
@@ -519,7 +519,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 122
+                "value": 98
               }
             ]
           },
@@ -570,6 +570,42 @@
                 "value": 85
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "c_country"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 94
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "asn"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 75
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "http_code"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 94
+              }
+            ]
           }
         ]
       },
@@ -589,7 +625,12 @@
           "show": false
         },
         "showHeader": true,
-        "sortBy": []
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "time"
+          }
+        ]
       },
       "pluginVersion": "8.4.7",
       "targets": [
@@ -601,7 +642,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH CTE AS (\n      SELECT time\n             ,cmcd_sid\n            --,CASE WHEN cmcd_bs=true THEN LAG(cmcd_bs, 1) OVER (PARTITION BY cmcd_sid ORDER BY time)  END as prev_cmcd_bs\n\t      ,CASE WHEN cmcd_bs=true THEN LAG(x_edge_request_id, 1) OVER (PARTITION BY cmcd_sid ORDER BY time)  END AS CF_request_id\n            ,CASE WHEN cmcd_bs=true THEN LAG(regexp_replace(cs_uri_stem, '\\?(.*)'), 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS uri\n            ,CASE WHEN cmcd_bs=true THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS throughput\n            ,CASE WHEN cmcd_bs=true THEN LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS result_type\n            ,CASE WHEN cmcd_bs=true THEN LAG(c_ip, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS client_ip\n            ,CASE WHEN cmcd_bs=true THEN LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS http_code\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not Null\n      AND c_country IN (${country:singlequote})\n      AND x_edge_location IN (${edge_location:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n)\n\nSELECT time, cmcd_sid, CF_request_id, uri, throughput, result_type, http_code, client_ip\nFROM CTE\nWHERE CF_request_id is not null\n      AND http_code IN (${status_code:singlequote})\n      AND result_type IN (${result_type:singlequote})\nORDER BY time DESC\n\n\n ",
+          "rawQuery": "WITH CTE AS (\n      SELECT time\n             ,cmcd_sid\n             ,c_country\n\t      ,CASE WHEN cmcd_bs=true THEN LAG(x_edge_request_id, 1) OVER (PARTITION BY cmcd_sid ORDER BY time)  END AS CF_request_id\n            ,CASE WHEN cmcd_bs=true THEN LAG(regexp_replace(cs_uri_stem, '\\?(.*)'), 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS uri\n            ,CASE WHEN cmcd_bs=true THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS throughput\n            ,CASE WHEN cmcd_bs=true THEN LAG(x_edge_detailed_result_type, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS result_type\n            ,CASE WHEN cmcd_bs=true THEN LAG(c_ip, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS client_ip\n            ,CASE WHEN cmcd_bs=true THEN LAG(sc_status, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS http_code\n            ,CASE WHEN cmcd_bs=true THEN LAG(asn, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END AS asn\n\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not Null\n      AND c_country IN (${country:singlequote})\n      AND x_edge_location IN (${edge_location:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})\n)\n\nSELECT time, c_country, asn, cmcd_sid, CF_request_id, uri, throughput, result_type, http_code, client_ip\nFROM CTE\nWHERE CF_request_id is not null\n      AND http_code IN (${status_code:singlequote})\n      AND result_type IN (${result_type:singlequote})\nORDER BY time DESC\n\n\n ",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -773,7 +814,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid AS plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\nGROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid AS plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -954,7 +995,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -1109,7 +1150,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
+          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -1128,6 +1169,187 @@
         }
       ],
       "title": "Rebuffering Sessions vs Rate of Change TTFB: HIT",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of Rebuffering Sessions vs  Origin TTFB",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rebuffering_ratio"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Rebuffering Ratio"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "moving_origin_ttfb"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "moving Origin TTFB"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "origin_ttfb"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Origin TTFB"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "refId": "A",
+          "table": "\"cmcd-table\""
+        },
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "hide": false,
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(origin_fbl) AS origin_ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND origin_fbl is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,origin_ttfb\n      ,avg(origin_ttfb) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_origin_ttfb\nFROM TTFB\nORDER BY bin_time DESC",
+          "refId": "B",
+          "table": "\"cmcd-table\""
+        }
+      ],
+      "title": "Rebuffering Sessions vs Origin  TTFB",
       "transformations": [],
       "type": "timeseries"
     },
@@ -1241,7 +1463,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 33
+        "y": 42
       },
       "id": 34,
       "options": {
@@ -1264,7 +1486,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
+          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -1426,7 +1648,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 51
       },
       "id": 35,
       "options": {
@@ -1449,7 +1671,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -1476,7 +1698,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 52
+        "y": 61
       },
       "id": 28,
       "options": {
@@ -1498,7 +1720,7 @@
             "uid": "${DS_AMAZON_TIMESTREAM}"
           },
           "measure": "MULTI",
-          "rawQuery": "SELECT cs_uri_stem, $__database.$__table.*\nFROM $__database.$__table\nWHERE $__timeFilter\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND x_edge_detailed_result_type IN (${result_type:singlequote})\n        AND cs_protocol_version IN (${protocol_version:singlequote})\n        AND cs_protocol IN (${protocol:singlequote})\nORDER BY time DESC\nLIMIT 100",
+          "rawQuery": "SELECT cs_uri_stem, $__database.$__table.*\nFROM $__database.$__table\nWHERE $__timeFilter\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND x_edge_detailed_result_type IN (${result_type:singlequote})\n        AND cs_protocol_version IN (${protocol_version:singlequote})\n        AND cs_protocol IN (${protocol:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\nORDER BY time DESC\nLIMIT 100",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -1507,7 +1729,7 @@
       "type": "logs"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
@@ -1609,6 +1831,23 @@
         "type": "query"
       },
       {
+        "current": {},
+        "definition": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
+        "hide": 0,
+        "includeAll": true,
+        "label": "ASN",
+        "multi": false,
+        "name": "asn",
+        "options": [],
+        "query": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "datasource": "${DS_AMAZON_TIMESTREAM}"
+      },
+      {
         "current": {
           "selected": true,
           "text": "All",
@@ -1688,6 +1927,10 @@
       },
       {
         "current": {},
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "${DS_AMAZON_TIMESTREAM}"
+        },
         "definition": "SELECT DISTINCT (sc_status), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY sc_status\nORDER BY CNT DESC",
         "hide": 0,
         "includeAll": true,
@@ -1700,8 +1943,7 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query",
-        "datasource": "${DS_AMAZON_TIMESTREAM}"
+        "type": "query"
       },
       {
         "current": {},
@@ -1788,13 +2030,13 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Troubleshooting",
   "uid": "DqWL_ko7k",
-  "version": 54,
+  "version": 21,
   "weekStart": ""
 }

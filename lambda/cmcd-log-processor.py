@@ -226,6 +226,21 @@ log_fields_list = [
         "Name": "cs-headers-count",
         "Type": "BIGINT",
         "Role": "Dimension"
+    },
+    {
+        "Name": "origin-fbl",
+        "Type": "DOUBLE",
+        "Role": "Measure"
+    },
+    {
+        "Name": "origin-lbl",
+        "Type": "DOUBLE",
+        "Role": "Measure"
+    },
+    {
+        "Name": "asn",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
     }
 ]
 
@@ -421,7 +436,6 @@ def lambda_handler(event, context):
 
         # generate list from the tab-delimited log entry
         payload_list = payload.strip().split('\t')
-        print("payload_list:", payload_list)
 
         for log_field in log_fields_list:
             if log_field['Name'] == 'cs-headers':
@@ -466,8 +480,6 @@ def lambda_handler(event, context):
         }
 
         print ("RECORD:", record)
-        t = json.dumps(record)
-        print("SIZE OF RECORD:", len(t.encode('utf-8')))
 
         records.append(record)
         record_counter = record_counter + 1
