@@ -1,18 +1,17 @@
 cd /home/ubuntu/
 sudo apt update
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-yes | sudo dpkg -i google-chrome-stable_current_amd64.deb
+wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_107.0.5304.87-1_amd64.deb
+yes | sudo dpkg -i google-chrome-stable_107.0.5304.87-1_amd64.deb
 sudo apt -f install -y
 sudo apt install python3-pip -y
 yes | pip3 install selenium
 yes | pip3 install requests -U
-#wget https://chromedriver.storage.googleapis.com/104.0.5112.79/chromedriver_linux64.zip
-#sudo apt install unzip -y
-#unzip chromedriver_linux64.zip
-#sudo mv chromedriver /usr/bin/chromedriver
-#sudo chown root:root /usr/bin/chromedriver
-#sudo chmod +x /usr/bin/chromedriver
-sudo apt install chromium-chromedriver -y
+wget https://chromedriver.storage.googleapis.com/107.0.5304.62/chromedriver_linux64.zip
+sudo apt install unzip -y
+unzip chromedriver_linux64.zip
+sudo mv chromedriver /usr/bin/chromedriver
+sudo chown root:root /usr/bin/chromedriver
+sudo chmod +x /usr/bin/chromedriver
 wget ${url}/hlsjs.py
 chmod +x hlsjs.py
 nohup /home/ubuntu/hlsjs.py -url ${url} -ua ${ua} -tput ${tput} > /dev/null 2>&1 &
