@@ -90,42 +90,38 @@ terraform destroy  \
 By default, the dashboard is not refreshed automatically. It helps to minimize numbers of queries to Timestream when it is not needed and hence - its cost.
 The dashboard can be refreshed by clicking  **Refresh Dashboard** in the top right hand menu or set to be refreshed automatically in the same menu.
 Change Time picker in the same menu from *Last 30 minutes* to another time interval.
+
 ### QoE dashboard
 1. This dashboard is intended to show QoE and traffic metrics.There are two sections (rows) - **Quality of experience** and **Traffic figures**. They can be minimized to help focus on other data. 
-2. **Concurrent Plays** is estimated by counting the number of unique video session id (CMCD *sid* parameter) for the time period specified in Time picker.
-Since it is only 5 minutes video constantly played, the same client can start different playbacks even within 5 minutes time interval.
+2. **Concurrent Plays**  is estimated by counting the number of unique video session id (CMCD *sid* parameter) for the time period specified in Time picker. It is not the same as unique viewers count: since it is only 5 minutes long video constantly played, the same client can finish and start multiple different plays within the time period.
 3. **Rebuffering percentage** is calculated as percentage of requests signalling rebuffering (CMCD **bs**) to the total number of requests.
-4. Find top contributor to **Rebuffering percentage** by selecting different countries in **Country** variable. How many rebuffering events are in the US and how many in France?
-How the data changed in **Average Encoded Bitrate** and  **Average Throughput per Client** for the country producing most of rebuffering events?
-5. Check **Average Throughput per Client** for the US and for Ireland (IE) - depending on in what region the solution has been installed, the S3 Origin can be closer to one or another country which affect the throughput for cache Miss case. If Cache Hit rate is close to 100%, feel free to invalidate CloudFront distribution.
-6. Check the charts in **Quality of experience** section. Unlike the upper widgets, charts in this section are using percentile aggregation controlled by **Percentiles aggregation** variable.
-7. Compare **Total Throughput** and **Measured Throughput** in **Traffic figures** section. **Total Throughput** is calculated from CDN logs, by dividing the sum of bytes sent to the viewers by the time period. 
-This way the picks are smoothed over period of time.
-**Measured Throughput** is measured from CMCD parameter *measured throughput* estimated by media player. In this case, traffic pick is not smoothed.
-8. **Plays by GEO** map shows a number of concurrent sessions originated in a country. **Plays by PoP** shows a number of concurrent sessions terminated by a CloudFront PoP. It can help see accuracy of request routing.
+4. **Average Encoded Bitrate** and **Average Measured Throughput** are calculated using average values of CMCD *br* and *mtp* respectively.
+5. **Average Play duration** is the sum of media objects duration (CMCD *d*) downloaded during a video play. This is the duration of the actual content seen by the viewer. If some time was spent on rebuffering, the actual downloaded content duration would be less than overall playback duration.
+6. **Buffer Length** and **Measured Throughput** use percentile aggregation controlled by **Percentiles aggregation** variable.
+7. **Total Throughput** and **Total Measured Throughput** both provide the total throughput however they do this differently.
+ **Total Throughput** is calculated using CloudFront *sc_bytes*, it is sum of bytes sent to the viewers divided by the time period. 
+This way the traffic peaks are smoothed over period of time.
+**Measured Throughput** is caclulated from CMCD parameter *mtp* which is a throughput measured by the media player. 
+In this case, traffic peaks are not smoothed.
+8. **Plays by GEO** map shows a number of concurrent sessions originated in a country. **Plays by PoP** shows a number of concurrent sessions terminated by a CloudFront PoP.
+
 ### Troubleshooting dashboard
-1. This dashboard is intended to help find a root cause of rebuffering events. **Rebuffering Ratio** is measured differently than in QoE dashboard. 
-It quantifies the ratio of video sessions that have more than 1% of rebuffering requests to the total number of requests within selected **Interval**. 
-For example, if the video chunks duration is 4 seconds, buffer length is 30 seconds, the player sends approx. 82 requests during 5 minutes. 
-Therefore, just 2 requests signalling rebuffering would be more than 1% of all requests making the session being counted as stalled/rebuffered. 
-Rebuffering Ratio chart can be used to set up an alert when percentage of rebuffering video plays exceeds a certain threshold and the root cause analysis is required.
-2. Using variables try to locate rebuffering to Country, Device type or Edge location. If it is evident that rebufferig is related to one of these dimensions it already suggests what can cause the issue.
-For example, if rebuffering happens on one of the CloudFront PoPs and for different viewer countries it signals that the PoP is under performing. 
-3. **Rebuffering Events Count** shows the number of requests signalling rebuffering via CMCD parameter BS (Buffer starvation). It is sent by a player when it was in rebuffering state <ins>prior</ins> to this request. Therefore, here we use only dimensions that do not change during the same video playback - Country, Edge Location, Streaming format, Protocol, CloudFront distribution and Device type.
-4. To aid on the root cause investigation, the next widget shows excerpt from logs for the request prior to Buffer starvation signal. It includes client IP to determine viewer network ASN and CloudFront request ID required by CloudFront support for performance related tickets. It enables for more accurate issues tracing.
-Here we also can filter data by Response Result Type and HTTP status code.
-5. To conduct more thorough investigation and understand whether rebuffering is caused by CDN or Origin, we use *Time-to-fist-byte* (TTFB) from CloudFront logs, which is the number of seconds between CloudFront server receives the request and writes the first byte of the response to the underlying kernel TCP stack.
-There is no impact of external aspects on this value (such as network or the file size), therefore it is straightforward to use as an indication of a CDN server performance.
-However, when request is Cache Miss, the CDN server needs to wait till the response from Origin arrived, therefore in this case TTFB indicates performance of Origin.
-By using both TTFB for Cache and Miss case we can determine whether we need to focus investigation on CDN performance or Origin, and if there is no evidence on their performance degradation, the troubleshooting focus can be switched
-on network or clients issues.
-For this we merge TTFB and Rebuffering ratio on the same chart to see if one is correlated to another. 
-For example, if there is simultaneous spike for both metrics it can signal correlation.
-Sometimes, TTFB can vary significantly and still remain within acceptable values. 
-For example, spike in TTFB from 10 ms to 20 ms is 100% increase but 20 ms is acceptable delay for the application to start delivering the first byte without causing performance issues. 
-Therefore, it is important to pay attention to the actual values and not only on TTFB line volatility.
-To help we that, we use 3rd line **Moving average TTFB** that measures the trend.
-This allows not to be misled by occasional spikes but rather see if there is an uptrend signalling issues. 
+1. This dashboard is intended to help find a root cause of rebuffering events.
+**Rebuffering Events Count** and **Rebuffering Events Percentage** show how rebuffering change over time.
+2. To aid on the root cause investigation, **Rebuffering Events Logs** shows excerpt from the logs of affected requests. Since Buffer starvation signal is carried in the request that follows the actual buffer startvation, we use *Lag* function to exract the data from the log record preceeding the *bs* signal. 
+ It enables for more accurate issues tracing. The data retrieved from the logs includes CloudFront request ID required by CloudFront support for performance related tickets.
+3. To understand whether rebuffering is caused by CDN or Origin, we use
+fist byte latency values as measured by CloudFront:
+   - *ttfb*, time to first byte, which is the number of seconds between CloudFront server receives the request and writes the first byte of the response to the underlying kernel TCP stack.There is no impact of external aspects on this value (such as network or the file size), therefore it can be used as an indication of a CDN server performance because in essence it is a measure of how fast CloudFront process the request and send the response. But only in the case of Cache Hit, because when the request is Cache Miss, CloudFront server needs to wait till the response from Origin arrived before submiting response. 
+   - *origin-fbl*, Origin first-byte latency, which the number of seconds of first-byte latency between CloudFront and your origin. if Orgin is overloaded, it might be slow in processing requests and first-byte latency will be impacted. 
+
+   By using both TTFB for Cache Hit and Origin first-byte latency we can decide whether we need to focus investigation on CDN performance or on Origin, and if there is no evidence on their performance degradation, the troubleshooting focus can be switched on network or clients issues.
+4. **Rebuffering Sessions vs  TTFB: HIT vs Origin FBL** merge Rebuffering ratio with *CloudFront time-to-first-byte* and *Origin first-byte latency* on the same chart to see if they are correlated. 
+For example, if there is simultaneous spike for two metrics it can signal correlation. Rebuffering Ratio is measured differently than in QoE dashboard. It quantifies the ratio of video sessions that have more than 1% of rebuffering requests to the total number of requests within selected Interval. For example, if the video chunks duration is 4 seconds, buffer length is 30 seconds, the player sends approx. 82 requests during 5 minutes. Therefore, just 2 requests signalling rebuffering would be more than 1% of all requests making the session being counted as stalled/rebuffered. Rebuffering Ratio can be used to set up an alert when percentage of rebuffering video plays exceeds a certain threshold and the root cause analysis is required.
+
+5. Sometimes, TTFB can vary significantly and still remain within acceptable values. For example, spike in TTFB from 10 ms to 20 ms is 100% increase but 20 ms is acceptable delay for the application to start delivering the first byte without causing performance issues. Therefore, it is important to pay attention to the actual values and not only on TTFB line volatility. To help we this, 
+**Changeability of  TTFB: HIT** and **Changeability of  Origin FBL** that provide moving average that measures the trend as well as rate of change. This allows not to be misled by occasional spikes but rather see if there is an uptrend signalling issues.
+
 
 
 

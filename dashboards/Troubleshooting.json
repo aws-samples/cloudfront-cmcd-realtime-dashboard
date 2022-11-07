@@ -59,7 +59,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1667808075511,
+  "iteration": 1667831870513,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -941,7 +941,7 @@
       "type": "table"
     },
     {
-      "description": "Number of Rebuffering Sessions vs TTFB for Cache Hit",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1099,7 +1099,7 @@
       "type": "timeseries"
     },
     {
-      "description": "Number of Rebuffering Sessions vs TTFB for Cache Hit",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1257,7 +1257,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 35,
   "style": "dark",
   "tags": [],
@@ -1568,6 +1568,6 @@
   "timezone": "",
   "title": "Troubleshooting",
   "uid": "DqWL_ko7k",
-  "version": 9,
+  "version": 2,
   "weekStart": ""
 }

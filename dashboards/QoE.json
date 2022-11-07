@@ -83,7 +83,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1667811376588,
+  "iteration": 1667831833752,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -143,7 +143,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "SELECT COUNT (DISTINCT(cmcd_sid)) AS Plays\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})",
+          "rawQuery": "SELECT COUNT (DISTINCT(cmcd_sid)) AS Plays\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND cmcd_sid is not NULL\n      AND c_country IN (${country:singlequote})\n      AND 'true' IN (${device:csv})\n      AND x_host_header IN (${distribution:singlequote})\n      AND cmcd_sf IN (${streaming_format:singlequote})\n      AND COALESCE (asn, '') IN (${asn:singlequote})\n      ",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -152,7 +152,7 @@
       "type": "stat"
     },
     {
-      "description": "Percentage of requests when the buffer was underrun to the total number of requests",
+      "description": "Calculated as percentage of requests signalling rebuffering (CMCD bs) to the total number of requests.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -274,7 +274,7 @@
           "table": "\"cmcd-table\""
         }
       ],
-      "title": "Avergage Encoded Bitrate",
+      "title": "Average Encoded Bitrate",
       "type": "stat"
     },
     {
@@ -355,7 +355,7 @@
       "type": "stat"
     },
     {
-      "description": "Average Throughput per Client",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -418,7 +418,7 @@
           "table": "\"cmcd-table\""
         }
       ],
-      "title": "Average Throughput per Client",
+      "title": "Average Measured Throughput ",
       "type": "stat"
     },
     {
@@ -592,7 +592,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n    SELECT c_country as Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_bl, $percentile/100) as buff_length\n    FROM $__database.$__table\n    WHERE $__timeFilter\n        AND cmcd_bl is not Null\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY c_country, BIN(time, ${interval})\n    ORDER BY bin_time\n)\nSELECT CREATE_TIME_SERIES(bin_time, buff_length) as Buffer_Length, Country\nFROM binned_query\nGROUP BY Country",
+          "rawQuery": "WITH binned_query AS (\n    SELECT c_country as Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_bl, $percentile * 0.01) as buff_length\n    FROM $__database.$__table\n    WHERE $__timeFilter\n        AND cmcd_bl is not Null\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY c_country, BIN(time, ${interval})\n    ORDER BY bin_time\n)\nSELECT CREATE_TIME_SERIES(bin_time, buff_length) as Buffer_Length, Country\nFROM binned_query\nGROUP BY Country",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
@@ -610,7 +610,7 @@
       "type": "barchart"
     },
     {
-      "description": "Measured Throughput per Client per Country",
+      "description": "Measured Throughput  by Object Type",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -644,7 +644,23 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "options": {
+                "av": {
+                  "color": "dark-green",
+                  "index": 1,
+                  "text": "Audio/Video"
+                },
+                "m": {
+                  "color": "dark-yellow",
+                  "index": 0,
+                  "text": "Manifest"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -689,12 +705,12 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH binned_query AS (\n    SELECT c_country AS Country, BIN(time, ${interval}) AS bin_time, approx_percentile(cmcd_mtp, $percentile/100) AS tput\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_mtp is not Null\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY c_country, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, tput) as Measured_Throughput, Country\nFROM binned_query\nGROUP BY Country",
+          "rawQuery": "WITH binned_query AS (\n    SELECT BIN(time, ${interval}) AS bin_time\n           ,approx_percentile(cmcd_mtp, $percentile * 0.01) AS tput\n          ,cmcd_ot\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_mtp is not Null\n          AND cmcd_ot is not Null\n          AND c_country IN (${country:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND x_edge_detailed_result_type IN (${result_type:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY cmcd_ot, BIN(time, ${interval})\nORDER BY bin_time DESC\n)\nSELECT CREATE_TIME_SERIES(bin_time, tput) as Measured_Throughput, cmcd_ot\nFROM binned_query\nGROUP BY cmcd_ot",
           "refId": "A",
           "table": "\"cmcd-table\""
         }
       ],
-      "title": "Download Speed",
+      "title": "Measured Throughput",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -1009,7 +1025,7 @@
           "table": "\"cmcd-table\""
         }
       ],
-      "title": "Measured Throughput",
+      "title": "Total Measured Throughput",
       "type": "timeseries"
     },
     {
