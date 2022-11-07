@@ -83,7 +83,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1667293639524,
+  "iteration": 1667811376588,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -1863,7 +1863,7 @@
         "name": "distribution",
         "options": [],
         "query": "SELECT DISTINCT (x_host_header ), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY x_host_header \nORDER BY CNT DESC",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -1932,13 +1932,13 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "QoE",
   "uid": "LWk3kZ2nk",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

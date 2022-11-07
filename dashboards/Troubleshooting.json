@@ -25,12 +25,6 @@
     },
     {
       "type": "panel",
-      "id": "logs",
-      "name": "Logs",
-      "version": ""
-    },
-    {
-      "type": "panel",
       "id": "table",
       "name": "Table",
       "version": ""
@@ -65,98 +59,10 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1667293963517,
+  "iteration": 1667808075511,
   "links": [],
   "liveNow": false,
   "panels": [
-    {
-      "description": "This query is calculating the ratio of plays with > 1% of rebuffering events to the total nimber of plays within this sessions.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "dark-red",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "displayName": "Rebuffering ratio",
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "id": 29,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "right"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "desc"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n          \n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "thresholds": [],
-      "title": "Rebuffering Sessions",
-      "type": "timeseries"
-    },
     {
       "description": "",
       "fieldConfig": {
@@ -217,7 +123,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 0
       },
       "id": 32,
       "options": {
@@ -309,7 +215,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 0
       },
       "id": 30,
       "options": {
@@ -339,6 +245,389 @@
       ],
       "thresholds": [],
       "title": "Rebuffering Events Percentage",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of Rebuffering Sessions vs TTFB for Cache Hit vs Origin FBL",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rebuffering_ratio"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Rebuffering Ratio"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "origin_fbl"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Origin FBL"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ttfb"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "TTFB"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid AS plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "refId": "A",
+          "table": "\"cmcd-table\""
+        },
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "hide": false,
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH CF_TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(time_to_first_byte) AS ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND x_edge_detailed_result_type = 'Hit'\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,ttfb AS ttfb\n      --,avg(ttfb) OVER (\n\t--\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t--) AS moving_ttfb\nFROM CF_TTFB\nORDER BY bin_time DESC",
+          "refId": "B",
+          "table": "\"cmcd-table\""
+        },
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "hide": false,
+          "measure": "MULTI",
+          "rawQuery": "WITH Origin_TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(origin_fbl) as origin_fbl\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,origin_fbl\nFROM Origin_TTFB\nORDER BY bin_time DESC",
+          "refId": "C",
+          "table": "\"cmcd-table\""
+        }
+      ],
+      "thresholds": [],
+      "title": "Rebuffering Sessions vs  TTFB: HIT vs Origin FBL",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of Rebuffering Sessions vs Measured Throughput",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rebuffering_ratio"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Rebuffering Ratio"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mtp_hit_avg"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Measured Throughput Hit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mtp_miss_avg"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Measured Throughput Miss"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "Kbits"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 38,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "refId": "A",
+          "table": "\"cmcd-table\""
+        },
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "hide": false,
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "\nWITH CTE AS (\nSELECT \n        time\n       ,CASE WHEN LAG(x_edge_detailed_result_type, 1)  OVER (PARTITION BY cmcd_sid ORDER BY time) = 'Hit' THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END as mtp_hit\n       ,CASE WHEN LAG(x_edge_detailed_result_type, 1)  OVER (PARTITION BY cmcd_sid ORDER BY time) = 'Miss' THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END as mtp_miss\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND x_edge_location IN (${edge_location:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n      AND 'true' IN (${device:csv})\n      AND COALESCE (asn, '') IN (${asn:singlequote})\n)\n\nSELECT bin(time, ${interval}) AS bin_time\n       ,avg(mtp_hit) AS mtp_hit_avg\n       ,avg(mtp_miss) AS mtp_miss_avg\nFROM CTE\nGROUP BY bin(time, ${interval})\nORDER BY bin(time, ${interval}) DESC",
+          "refId": "B",
+          "table": "\"cmcd-table\""
+        }
+      ],
+      "title": "Rebuffering Sessions vs MTP",
       "transformations": [],
       "type": "timeseries"
     },
@@ -613,7 +902,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 27
       },
       "id": 33,
       "options": {
@@ -707,30 +996,161 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "rebuffering_ratio"
+              "options": "moving_ttfb"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Rebuffering Ratio"
+                "value": "TTFB moving average"
               },
               {
                 "id": "custom.axisPlacement",
                 "value": "left"
               },
               {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
+                "id": "unit",
+                "value": "s"
               },
               {
-                "id": "unit",
-                "value": "percent"
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
               }
             ]
           },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rateOfChange"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "TTFB rate of change"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH TTFB AS (\n       SELECT bin(time, ${interval}) AS bin_time, avg(time_to_first_byte) AS ttfb\n       FROM $__database.$__table\n       WHERE $__timeFilter\n              AND x_edge_location IN (${edge_location:singlequote})\n              AND cs_protocol_version IN (${protocol_version:singlequote})\n              AND cs_protocol IN (${protocol:singlequote})\n              AND x_edge_detailed_result_type = 'Hit'\n       GROUP BY bin(time, ${interval})\n       ORDER BY bin_time\n)\nSELECT derivative_linear(CREATE_TIME_SERIES(bin_time, ttfb), ${interval}) AS rateOfChange\n--non_negative_derivative_linear\nFROM TTFB\n",
+          "refId": "A",
+          "table": "\"cmcd-table\""
+        },
+        {
+          "database": "\"cmcd-db\"",
+          "datasource": {
+            "type": "grafana-timestream-datasource",
+            "uid": "${DS_AMAZON_TIMESTREAM}"
+          },
+          "hide": false,
+          "measure": "MULTI",
+          "queryType": "raw",
+          "rawQuery": "WITH TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(time_to_first_byte) AS ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND x_edge_detailed_result_type = 'Hit'\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      --,ttfb AS ttfb\n      ,avg(ttfb) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_ttfb\nFROM TTFB\nORDER BY bin_time DESC",
+          "refId": "B",
+          "table": "\"cmcd-table\""
+        }
+      ],
+      "title": "Changeability of  TTFB: HIT",
+      "transformations": [],
+      "type": "timeseries"
+    },
+    {
+      "description": "Number of Rebuffering Sessions vs TTFB for Cache Hit",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
           {
             "matcher": {
               "id": "byName",
@@ -739,194 +1159,13 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "moving TTFB"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "ttfb"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "TTFB"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 24
-      },
-      "id": 22,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid AS plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\nGROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        },
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "hide": false,
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(time_to_first_byte) AS ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND x_edge_detailed_result_type = 'Hit'\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,ttfb AS ttfb\n      ,avg(ttfb) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_ttfb\nFROM TTFB\nORDER BY bin_time DESC",
-          "refId": "B",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Rebuffering Sessions vs  TTFB: HIT",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of Rebuffering Sessions vs  TTFB for Cache Miss",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rebuffering_ratio"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Rebuffering Ratio"
+                "value": "Origin FBL moving average"
               },
               {
                 "id": "custom.axisPlacement",
                 "value": "left"
               },
               {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "moving_ttfb"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "moving TTFB"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
                 "id": "unit",
                 "value": "s"
               },
@@ -942,12 +1181,12 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "ttfb"
+              "options": "rateOfChange"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "TTFB"
+                "value": "Origin FBL rate of change"
               },
               {
                 "id": "custom.axisPlacement",
@@ -972,9 +1211,9 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 35
       },
-      "id": 21,
+      "id": 37,
       "options": {
         "legend": {
           "calcs": [],
@@ -995,7 +1234,7 @@
           },
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
+          "rawQuery": "WITH Origin_TTFB AS (\n       SELECT bin(time, ${interval}) AS bin_time\n       ,avg(origin_fbl) AS origin_fbl\n       FROM $__database.$__table\n       WHERE $__timeFilter\n              AND c_country IN (${country:singlequote})\n              AND x_edge_location IN (${edge_location:singlequote})\n              AND cs_protocol_version IN (${protocol_version:singlequote})\n              AND cs_protocol IN (${protocol:singlequote})\n              AND x_host_header IN (${distribution:singlequote})\n              AND COALESCE (asn, '') IN (${asn:singlequote})\n              AND origin_fbl IS NOT NULL\n       GROUP BY bin(time, ${interval})\n       ORDER BY bin_time DESC\n)\nSELECT derivative_linear(CREATE_TIME_SERIES(bin_time, origin_fbl), ${interval}) AS rateOfChange\n       --non_negative_derivative_linear\nFROM Origin_TTFB\n",
           "refId": "A",
           "table": "\"cmcd-table\""
         },
@@ -1008,725 +1247,14 @@
           "hide": false,
           "measure": "MULTI",
           "queryType": "raw",
-          "rawQuery": "WITH TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(time_to_first_byte) AS ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            --AND x_edge_detailed_result_type IN ('Miss', 'OriginConnectError', 'OriginContentRangeLengthError',\n            --    'OriginDnsError', 'OriginError', 'OriginHeaderTooBigError', 'OriginInvalidResponseError',\n            --    'OriginReadError', 'OriginZeroSizeObjectError')\n            AND x_edge_detailed_result_type IN ('Miss')\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,ttfb AS ttfb\n      ,avg(ttfb) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_ttfb\nFROM TTFB\nORDER BY bin_time DESC",
+          "rawQuery": "WITH Origin_TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(origin_fbl) AS origin_fbl\n      FROM $__database.$__table\n      WHERE $__timeFilter\n              AND c_country IN (${country:singlequote})\n              AND x_edge_location IN (${edge_location:singlequote})\n              AND cs_protocol_version IN (${protocol_version:singlequote})\n              AND cs_protocol IN (${protocol:singlequote})\n              AND x_host_header IN (${distribution:singlequote})\n              AND COALESCE (asn, '') IN (${asn:singlequote})\n              AND origin_fbl IS NOT NULL\n      GROUP BY bin(time, ${interval})\n      ORDER BY bin_time DESC\n)\nSELECT bin_time\n      ,avg(origin_fbl) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_ttfb\nFROM Origin_TTFB",
           "refId": "B",
           "table": "\"cmcd-table\""
         }
       ],
-      "title": "Rebuffering Sessions vs TTFB: MISS",
+      "title": "Changeability of  Origin FBL",
       "transformations": [],
       "type": "timeseries"
-    },
-    {
-      "description": "Number of Rebuffering Sessions vs TTFB Rate of Change",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rateOfChange"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rateOfChange"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "TTFB Rate of Change"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rebuffering_ratio"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Rebuffering Sessions"
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 33
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        },
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "hide": false,
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH TTFB AS (\nSELECT bin(time, ${interval}) AS bin_time, avg(time_to_first_byte) AS ttfb\nFROM $__database.$__table\nWHERE $__timeFilter\n       AND c_country IN (${country:singlequote})\n       AND x_edge_detailed_result_type IN (${result_type:singlequote})\n       AND cs_protocol_version IN (${protocol_version:singlequote})\n       AND cs_protocol IN (${protocol:singlequote})\n       AND x_edge_detailed_result_type = 'Hit'\nGROUP BY bin(time, ${interval})\nORDER BY bin_time\n)\nSELECT derivative_linear(CREATE_TIME_SERIES(bin_time, ttfb), ${interval}) AS rateOfChange\n--non_negative_derivative_linear\nFROM TTFB",
-          "refId": "B",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Rebuffering Sessions vs Rate of Change TTFB: HIT",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of Rebuffering Sessions vs  Origin TTFB",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rebuffering_ratio"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Rebuffering Ratio"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "left"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "moving_origin_ttfb"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "moving Origin TTFB"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "origin_ttfb"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Origin TTFB"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 33
-      },
-      "id": 36,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END as BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        },
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "hide": false,
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH TTFB AS (\n      SELECT bin(time, ${interval}) AS bin_time\n            ,avg(origin_fbl) AS origin_ttfb\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND origin_fbl is not Null\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n      GROUP BY bin(time, ${interval})\n)\nSELECT bin_time\n      ,origin_ttfb\n      ,avg(origin_ttfb) OVER (\n\t\tORDER BY bin_time range BETWEEN unbounded preceding AND CURRENT row\n\t) AS moving_origin_ttfb\nFROM TTFB\nORDER BY bin_time DESC",
-          "refId": "B",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Rebuffering Sessions vs Origin  TTFB",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of Rebuffering Sessions vs TTFB Rate of Change",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rateOfChange"
-            },
-            "properties": [
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rateOfChange"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "TTFB Rate of Change"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rebuffering_ratio"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Rebuffering Sessions"
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 42
-      },
-      "id": 34,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions\nAS (\n    SELECT cmcd_sid AS plays\n           ,BIN(time, ${interval}) AS bin_time\n           ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n    FROM $__database.$__table\n    WHERE $__timeFilter\n          AND cmcd_sid IS NOT NULL\n          AND c_country IN (${country:singlequote})\n          AND x_edge_location IN (${edge_location:singlequote})\n          AND cs_protocol_version IN (${protocol_version:singlequote})\n          AND cs_protocol IN (${protocol:singlequote})\n          AND 'true' IN (${device:csv})\n          AND x_host_header IN (${distribution:singlequote})\n          AND cmcd_sf IN (${streaming_format:singlequote})\n          AND COALESCE (asn, '') IN (${asn:singlequote})\n    GROUP BY BIN(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) AS rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        },
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "hide": false,
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH TTFB AS (\nSELECT bin(time, ${interval}) AS bin_time, avg(time_to_first_byte) AS ttfb\nFROM $__database.$__table\nWHERE $__timeFilter\n       AND c_country IN (${country:singlequote})\n       AND x_edge_location IN (${edge_location:singlequote})\n       AND x_edge_detailed_result_type IN (${result_type:singlequote})\n       AND cs_protocol_version IN (${protocol_version:singlequote})\n       AND cs_protocol IN (${protocol:singlequote})\n       AND x_edge_detailed_result_type = 'Miss'\nGROUP BY bin(time, ${interval})\nORDER BY bin_time\n)\nSELECT derivative_linear(CREATE_TIME_SERIES(bin_time, ttfb), ${interval}) AS rateOfChange\n--non_negative_derivative_linear\nFROM TTFB",
-          "refId": "B",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Rebuffering Sessions vs Rate of Change TTFB: MISS",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "description": "Number of Rebuffering Sessions vs Measured Throughput",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rebuffering_ratio"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Rebuffering Ratio"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "left"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "mtp_hit_avg"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Measured Throughput Hit"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              },
-              {
-                "id": "unit",
-                "value": "Kbits"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "mtp_miss_avg"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Measured Throughput Miss"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "fixed"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "Kbits"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 51
-      },
-      "id": 35,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "WITH rebuffering_sessions AS (\n      SELECT cmcd_sid as plays\n            ,bin(time, ${interval}) AS bin_time\n            ,CASE WHEN count_if(cmcd_bs) >= 0.01 * count (x_edge_request_id) THEN 'BS' ELSE 'NO-BS' END AS BS\n      FROM $__database.$__table\n      WHERE $__timeFilter\n            AND cmcd_sid IS NOT NULL\n            AND c_country IN (${country:singlequote})\n            AND x_edge_location IN (${edge_location:singlequote})\n            AND cs_protocol_version IN (${protocol_version:singlequote})\n            AND cs_protocol IN (${protocol:singlequote})\n            AND 'true' IN (${device:csv})\n            AND x_host_header IN (${distribution:singlequote})\n            AND cmcd_sf IN (${streaming_format:singlequote})\n            AND COALESCE (asn, '') IN (${asn:singlequote})\n      GROUP BY bin(time, ${interval}), cmcd_sid\n)\nSELECT bin_time\n      ,ROUND(COUNT (CASE WHEN BS = 'BS' THEN 1 ELSE Null END) / (1.0 * NULLIF(COUNT (plays), 0)) * 100) as rebuffering_ratio\nFROM rebuffering_sessions\nGROUP BY bin_time\nORDER BY bin_time DESC\n",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        },
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "hide": false,
-          "measure": "MULTI",
-          "queryType": "raw",
-          "rawQuery": "\nWITH CTE AS (\nSELECT \n        time\n       ,CASE WHEN LAG(x_edge_detailed_result_type, 1)  OVER (PARTITION BY cmcd_sid ORDER BY time) = 'Hit' THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END as mtp_hit\n       ,CASE WHEN LAG(x_edge_detailed_result_type, 1)  OVER (PARTITION BY cmcd_sid ORDER BY time) = 'Miss' THEN LAG(cmcd_mtp, 1) OVER (PARTITION BY cmcd_sid ORDER BY time) END as mtp_miss\nFROM $__database.$__table\nWHERE $__timeFilter\n      AND c_country IN (${country:singlequote})\n      AND x_edge_location IN (${edge_location:singlequote})\n      AND cs_protocol_version IN (${protocol_version:singlequote})\n      AND cs_protocol IN (${protocol:singlequote})\n)\n\nSELECT bin(time, ${interval}) AS bin_time\n       ,avg(mtp_hit) AS mtp_hit_avg\n       ,avg(mtp_miss) AS mtp_miss_avg\nFROM CTE\nGROUP BY bin(time, ${interval})\nORDER BY bin(time, ${interval}) DESC",
-          "refId": "B",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Rebuffering Sessions vs MTP",
-      "transformations": [],
-      "type": "timeseries"
-    },
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 61
-      },
-      "id": 28,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": false,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
-      },
-      "pluginVersion": "8.4.7",
-      "targets": [
-        {
-          "database": "\"cmcd-db\"",
-          "datasource": {
-            "type": "grafana-timestream-datasource",
-            "uid": "${DS_AMAZON_TIMESTREAM}"
-          },
-          "measure": "MULTI",
-          "rawQuery": "SELECT cs_uri_stem, $__database.$__table.*\nFROM $__database.$__table\nWHERE $__timeFilter\n        AND c_country IN (${country:singlequote})\n        AND 'true' IN (${device:csv})\n        AND x_host_header IN (${distribution:singlequote})\n        AND cmcd_sf IN (${streaming_format:singlequote})\n        AND x_edge_detailed_result_type IN (${result_type:singlequote})\n        AND cs_protocol_version IN (${protocol_version:singlequote})\n        AND cs_protocol IN (${protocol:singlequote})\n        AND COALESCE (asn, '') IN (${asn:singlequote})\nORDER BY time DESC\nLIMIT 100",
-          "refId": "A",
-          "table": "\"cmcd-table\""
-        }
-      ],
-      "title": "Row logs",
-      "type": "logs"
     }
   ],
   "refresh": false,
@@ -1832,6 +1360,10 @@
       },
       {
         "current": {},
+        "datasource": {
+          "type": "grafana-timestream-datasource",
+          "uid": "${DS_AMAZON_TIMESTREAM}"
+        },
         "definition": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
         "hide": 0,
         "includeAll": true,
@@ -1840,16 +1372,15 @@
         "name": "asn",
         "options": [],
         "query": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "type": "query",
-        "datasource": "${DS_AMAZON_TIMESTREAM}"
+        "type": "query"
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -1960,7 +1491,7 @@
         "name": "distribution",
         "options": [],
         "query": "SELECT DISTINCT (x_host_header ), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY x_host_header \nORDER BY CNT DESC",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
@@ -2030,13 +1561,13 @@
     ]
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Troubleshooting",
   "uid": "DqWL_ko7k",
-  "version": 21,
+  "version": 9,
   "weekStart": ""
 }
