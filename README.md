@@ -113,7 +113,7 @@ In this case, traffic peaks are not smoothed.
 3. To understand whether rebuffering is caused by CDN or Origin, we use
 fist byte latency values as measured by CloudFront:
    - *ttfb*, time to first byte, which is the number of seconds between CloudFront server receives the request and writes the first byte of the response to the underlying kernel TCP stack.There is no impact of external aspects on this value (such as network or the file size), therefore it can be used as an indication of a CDN server performance because in essence it is a measure of how fast CloudFront process the request and send the response. But only in the case of Cache Hit, because when the request is Cache Miss, CloudFront server needs to wait till the response from Origin arrived before submiting response. 
-   - *origin-fbl*, Origin first-byte latency, which the number of seconds of first-byte latency between CloudFront and your origin. if Orgin is overloaded, it might be slow in processing requests and first-byte latency will be impacted. 
+   - *origin-fbl*, Origin first-byte latency, which is the number of seconds of first-byte latency between CloudFront and your origin. if Orgin is overloaded, it might be slow in processing requests and first-byte latency will be impacted. 
 
    By using both TTFB for Cache Hit and Origin first-byte latency we can decide whether we need to focus investigation on CDN performance or on Origin, and if there is no evidence on their performance degradation, the troubleshooting focus can be switched on network or clients issues.
 4. **Rebuffering Sessions vs  TTFB: HIT vs Origin FBL** merge Rebuffering ratio with *CloudFront time-to-first-byte* and *Origin first-byte latency* on the same chart to see if they are correlated. 

@@ -120,7 +120,6 @@ resource "aws_cloudfront_origin_request_policy" "cmcd-origin-policy" {
   }
 }
 
-
 resource "aws_cloudfront_distribution" "distribution" {
   comment = "CMCD"
   origin {
@@ -140,6 +139,7 @@ resource "aws_cloudfront_distribution" "distribution" {
     target_origin_id = "${var.solution_prefix}-origin"
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"  # CachingOptimized
     origin_request_policy_id = aws_cloudfront_origin_request_policy.cmcd-origin-policy.id
+    response_headers_policy_id = "5cc3b908-e619-4b99-88e5-2cf7f45965bd" #CORS-With-Preflight
     viewer_protocol_policy = "redirect-to-https"
     realtime_log_config_arn = aws_cloudfront_realtime_log_config.cf_real_time_logs.arn
   }
@@ -150,6 +150,7 @@ resource "aws_cloudfront_distribution" "distribution" {
     target_origin_id = "${var.solution_prefix}-origin"
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"  # CachingOptimized
     origin_request_policy_id = aws_cloudfront_origin_request_policy.cmcd-origin-policy.id
+    response_headers_policy_id = "5cc3b908-e619-4b99-88e5-2cf7f45965bd" #CORS-With-Preflight
     viewer_protocol_policy = "redirect-to-https"
     realtime_log_config_arn = aws_cloudfront_realtime_log_config.cf_real_time_logs.arn
   }
