@@ -5,11 +5,10 @@ import argparse
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 
 chrome_options = Options()
-chrome_options.headless = True
-chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--headless")
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("-url", type=str, required = True, help ='Player URL')
@@ -22,10 +21,6 @@ if args.ua is not None:
     chrome_options.add_argument(chrome_arg_ua)
 
 driver = webdriver.Chrome(options=chrome_options)
-#path = '/usr/lib/chromium-browser/chromedriver'
-#s = Service(path)
-#driver = webdriver.Chrome(service=s, options=chrome_options)
-
 
 if args.tput is not None:
     driver.set_network_conditions(
