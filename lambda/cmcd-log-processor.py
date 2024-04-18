@@ -1,12 +1,8 @@
-import base64
 import json
 import boto3
 from botocore.config import Config
 import os
-import datetime
 import urllib.parse
-
-import sys
 
 session = boto3.Session()
 
@@ -117,11 +113,11 @@ log_fields_list = [
         "Type": "VARCHAR",
         "Role": "Dimension"
     },
-    {
-        "Name": "cs-cookie",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
+    #{
+    #    "Name": "cs-cookie",
+    #    "Type": "VARCHAR",
+    #    "Role": "Dimension"
+    #},
     {
         "Name": "cs-uri-query",
         "Type": "VARCHAR",
@@ -152,16 +148,16 @@ log_fields_list = [
         "Type": "VARCHAR",
         "Role": "Dimension"
     },
-    {
-        "Name": "fle-encrypted-fields",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        "Name": "fle-status",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
+    #{
+    #    "Name": "fle-encrypted-fields",
+    #    "Type": "VARCHAR",
+    #    "Role": "Dimension"
+    #},
+    #{
+    #    "Name": "fle-status",
+    #    "Type": "VARCHAR",
+    #    "Role": "Dimension"
+    #},
     {
         "Name": "sc-content-type",
         "Type": "VARCHAR",
@@ -241,110 +237,94 @@ log_fields_list = [
         "Name": "asn",
         "Type": "VARCHAR",
         "Role": "Dimension"
-    }
-]
-
-cmcd_fields_list = [
-    # CMCD paramerers supported by the player
+    },
     {
-        # Encoded Bitrate, kbps
-        "Name": "br",
+        "Name": "cmcd-encoded-bitrate",
         "Type": "BIGINT",
         "Role": "Measure"
     },
     {
-        # Content ID
-        "Name": "cid",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Buffer Length, ms
-        "Name": "bl",
+        "Name": "cmcd-buffer-length",
         "Type": "BIGINT",
         "Role": "Measure"
     },
     {
-        # Object duration, ms
-        "Name": "d",
-        "Type": "BIGINT",
-        "Role": "Measure"
-    },
-    {
-        # Deadline, kbps.
-        "Name": "dl",
-        "Type": "BIGINT",
-        "Role": "Measure"
-    },
-    {
-        # Measured throughput, kbps
-        "Name": "mtp",
-        "Type": "BIGINT",
-        "Role": "Measure"
-    },
-    {
-        # Object type
-        "Name": "ot",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Playback rate
-        "Name": "pr",
-        "Type": "BIGINT",
-        "Role": "Dimension"
-    },
-    {
-        # Requested  maximum throughput, kbps
-        "Name": "rtp",
-        "Type": "BIGINT",
-        "Role": "Measure"
-    },
-    {
-        # Streaming format
-        "Name": "sf",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Session ID
-        "Name": "sid",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Stream type
-        "Name": "st",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Startup
-        "Name": "su",
-        "Type": "VARCHAR",
-        "Role": "Dimension"
-    },
-    {
-        # Buffer Starvation
-        "Name": "bs",
+        "Name": "cmcd-buffer-starvation",
         "Type": "BOOLEAN",
         "Role": "Measure"
     },
     {
-        # Top bitrate, kbps
-        "Name": "tb",
-        "Type": "BIGINT",
-        "Role": "Measure"
-    },
-    {
-        # Next Object Request
-        "Name": "nor",
+        "Name": "cmcd-content-id",
         "Type": "VARCHAR",
         "Role": "Dimension"
     },
     {
-        # Next Range Request
-        "Name": "nrr",
+        "Name": "cmcd-object-duration",
+        "Type": "BIGINT",
+        "Role": "Measure"
+    },
+    {
+        "Name": "cmcd-deadline",
+        "Type": "BIGINT",
+        "Role": "Measure"
+    },
+    {
+        "Name": "cmcd-measured-throughput",
+        "Type": "BIGINT",
+        "Role": "Measure"
+    },
+    {
+        "Name": "cmcd-next-object-request",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-next-range-request",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-object-type",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-playback-rate",
+        "Type": "BIGINT",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-requested-maximum-throughput",
+        "Type": "BIGINT",
+        "Role": "Measure"
+    },
+    {
+        "Name": "cmcd-streaming-format",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-session-id",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-stream-type",
+        "Type": "VARCHAR",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-startup",
+        "Type": "BOOLEAN",
+        "Role": "Dimension"
+    },
+    {
+        "Name": "cmcd-top-bitrate",
+        "Type": "BIGINT",
+        "Role": "Measure"
+    },
+    {
+        "Name": "cmcd-version",
         "Type": "VARCHAR",
         "Role": "Dimension"
     }
@@ -355,51 +335,23 @@ supported_headers = ['CloudFront-Is-IOS-Viewer', 'CloudFront-Is-Tablet-Viewer', 
                      'CloudFront-Viewer-City', 'CloudFront-Is-SmartTV-Viewer', 'CloudFront-Is-Android-Viewer',
                      'CloudFront-Is-Desktop-Viewer']
 
-# Utility function for parsing the query string
-def parse_query_string(query_string):
-    cmcd_dimensions = []
-    cmcd_measures = []
-
-    query_string_dict = urllib.parse.parse_qs(query_string)
-    if 'CMCD' in query_string_dict:
-        cmcd_string_decoded = urllib.parse.unquote(urllib.parse.unquote(''.join(query_string_dict['CMCD'])))
-        cmcd_parameters_list = (cmcd_string_decoded.split(","))
-        # removing emtpy elements
-        cmcd_parameters_list = list(filter(None, cmcd_parameters_list))
-        for nr, item in enumerate(cmcd_parameters_list):
-            # bs and su flags don't carry any value
-            if item == 'su' or item == 'bs':
-                cmcd_parameters_list[nr] = item + "=" + "true"
-
-        cmcd_parameters_dict = dict(s.split('=') for s in cmcd_parameters_list)
-
-        for cmcd_field in cmcd_fields_list:
-            if cmcd_field['Name'] in cmcd_parameters_dict.keys():
-                if cmcd_field['Role'] == 'Dimension':
-                    cmcd_dimensions.append(
-                        {'Name': 'cmcd' + '_' + cmcd_field['Name'],
-                         'Value': str(cmcd_parameters_dict[cmcd_field['Name']]).strip()}
-                    )
-                elif cmcd_field['Role'] == 'Measure':
-                    cmcd_measures.append(
-                        {'Name': 'cmcd' + '_' + cmcd_field['Name'], 'Type': cmcd_field['Type'],
-                         'Value': str(cmcd_parameters_dict[cmcd_field['Name']]).strip()}
-                    )
-    return cmcd_dimensions, cmcd_measures
-
-
 # Utility function for parsing the header fields
 def parse_headers(headers):
     headers_dimensions = []
     headers_list = list(filter(None, urllib.parse.unquote(headers).split('\n')))  # filter out empty strings
     for nr, item in enumerate(headers_list):
-        header, value = item.split(":", 1)
+        try:
+            header, value = item.split(":", 1)
+        except ValueError:
+            # If there's no ":" in the item, it typically means mismatch with real-time logs fields configuration
+            continue
         if header in supported_headers:
             headers_dimensions.append({
                 'Name': header.replace('-', '_'),
                 'Value': str(value.strip())
             })
     return headers_dimensions
+
 
 def write_batch_timestream(records, record_counter):
     try:
@@ -414,6 +366,9 @@ def write_batch_timestream(records, record_counter):
         print("Other records were written successfully. ")
     except Exception as err:
         print("Exception: " + str(err))
+
+
+import base64
 
 
 def lambda_handler(event, context):
@@ -438,37 +393,34 @@ def lambda_handler(event, context):
         payload_list = payload.strip().split('\t')
 
         for log_field in log_fields_list:
-            if log_field['Name'] == 'cs-headers':
-                headers_dimensions = parse_headers(payload_list[counter].strip())
-                if headers_dimensions:
-                    dimensions_list = dimensions_list + headers_dimensions
-                counter += 1 #comment if 'cs-headers' needs to be ingested in the Database
-                continue
-            elif log_field['Name'] == 'cs-uri-query':
-                cs_uri_query = payload_list[counter].strip()
-                query_dimensions, query_measures = parse_query_string(payload_list[counter].strip())
-                dimensions_list += query_dimensions
-                measures_list += query_measures
-                counter += 1 #comment if 'cs-uri-query' needs to be ingested in the Database
-                continue
-            if log_field['Role'] == 'Dimension':
-                dimensions_list.append(
-                    {'Name': log_field['Name'].replace('-', '_'), 'Value': str(payload_list[counter]).strip()}
-                )
-            elif log_field['Role'] == 'Measure':
-                # If the measure value is '-' (e.g. sc-content-len is '-' for compressed files), we omit it and Timestream record it as Null
-                if payload_list[counter].strip() == '-':
-                    counter += 1
+            try:
+                if log_field['Name'] == 'cs-headers':
+                    headers_dimensions = parse_headers(payload_list[counter].strip())
+                    if headers_dimensions:
+                        dimensions_list += headers_dimensions
+                    counter += 1  # comment if 'cs-headers' needs to be ingested in the Database
                     continue
-                else:
-                    measures_list.append(
-                        {'Name': log_field['Name'].replace('-', '_'), 'Type': log_field['Type'],
-                         'Value': str(payload_list[counter]).strip()}
+
+                if log_field['Role'] == 'Dimension':
+                    dimensions_list.append(
+                        {'Name': log_field['Name'].replace('-', '_'), 'Value': str(payload_list[counter]).strip()}
                     )
-            elif log_field['Role'] == 'Timestamp':
-                # Convert to milliseconds
-                timestamp = str(int(float(payload_list[counter].strip()) * 1000))
-            counter += 1
+                elif log_field['Role'] == 'Measure':
+                    if payload_list[counter].strip() == '-':
+                        counter += 1
+                        continue
+                    else:
+                        measures_list.append(
+                            {'Name': log_field['Name'].replace('-', '_'), 'Type': log_field['Type'],
+                             'Value': str(payload_list[counter]).strip()}
+                        )
+                elif log_field['Role'] == 'Timestamp':
+                    # Convert to milliseconds
+                    timestamp = str(int(float(payload_list[counter].strip()) * 1000))
+                counter += 1
+            except Exception as e:
+                print(f"Exception occurred when parsing log record: {e}")
+                continue
 
         record = {
             'Dimensions': dimensions_list,
@@ -479,7 +431,7 @@ def lambda_handler(event, context):
             'TimeUnit': 'MILLISECONDS'
         }
 
-        print ("RECORD:", record)
+        print("RECORD:", record)
 
         records.append(record)
         record_counter = record_counter + 1

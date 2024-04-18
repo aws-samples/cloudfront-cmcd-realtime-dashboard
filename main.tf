@@ -28,7 +28,6 @@ locals {
   mime_types = jsondecode(file("data/mime_types.json"))
 }
 
-
 resource "aws_s3_bucket" "origin" {
   bucket_prefix = "cmcd-origin-"
 }
@@ -191,7 +190,7 @@ resource "aws_iam_role" "cf_real_time_logs" {
 }
 
 resource "aws_iam_role_policy" "cf_real_time_logs" {
-  name = "cf-real-time-logs" #new policy that includes 3 new fields: origin-lbl, origin-fbl, asn
+  name = "cf-real-time-logs"
   role = aws_iam_role.cf_real_time_logs.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -233,15 +232,15 @@ resource "aws_cloudfront_realtime_log_config" "cf_real_time_logs" {
     "c-ip-version",
     "cs-user-agent",
     "cs-referer",
-    "cs-cookie",
+    #"cs-cookie",
     "cs-uri-query",
     "x-edge-response-result-type",
     "x-forwarded-for",
     "ssl-protocol",
     "ssl-cipher",
     "x-edge-result-type",
-    "fle-encrypted-fields",
-    "fle-status",
+    #"fle-encrypted-fields",
+    #"fle-status",
     "sc-content-type",
     "sc-content-len",
     "sc-range-start",
@@ -257,7 +256,25 @@ resource "aws_cloudfront_realtime_log_config" "cf_real_time_logs" {
     "cs-headers-count",
     "origin-fbl",
     "origin-lbl",
-    "asn"
+    "asn",
+    "cmcd-encoded-bitrate",
+    "cmcd-buffer-length",
+    "cmcd-buffer-starvation",
+    "cmcd-content-id",
+    "cmcd-object-duration",
+    "cmcd-deadline",
+    "cmcd-measured-throughput",
+    "cmcd-next-object-request",
+    "cmcd-next-range-request",
+    "cmcd-object-type",
+    "cmcd-playback-rate",
+    "cmcd-requested-maximum-throughput",
+    "cmcd-streaming-format",
+    "cmcd-session-id",
+    "cmcd-stream-type",
+    "cmcd-startup",
+    "cmcd-top-bitrate",
+    "cmcd-version"
   ]
 
   endpoint {
@@ -432,21 +449,6 @@ resource "aws_lambda_permission" "cf_logs" {
   source_arn    = format("%s:*", aws_kinesis_stream.cf_real_time_logs.arn)
 }
 
-# SNS topic for receiving notifications from Grafana
-# Grafana doens't support export of alert rules
-#resource "aws_sns_topic" "cmcd" {
-#  name = "cmcd-topic"
-#}
-#resource "aws_sns_topic_subscription" "cmcd-notifications" {
-#  topic_arn = aws_sns_topic.cmcd.arn
-#  protocol  = "email"
-#  endpoint  = var.notifications_email
-#}
-
-# Grafana - provisioning is not yet fully automated, see https://github.com/hashicorp/terraform-provider-aws/issues/24166
-# One manual step is needed to finish provisioning: 
-# Go to Grafana Workspace -> AWS Single Sign-On (SSO) -> Click "Assign new user or group" -> Select and assign your user.
-
 resource "aws_iam_policy" "cf_logs_grafana_timestream_policy" {
   name = "cf_logs_grafana_timestream_policy"
   path = "/"
@@ -501,7 +503,7 @@ resource "aws_iam_role_policy_attachment" "cf_logs_grafana_policy_attachment" {
 resource "aws_grafana_workspace" "cf_grafana" {
   name                     = "cf-grafana"
   account_access_type      = "ORGANIZATION"
-  organizational_units     = [var.grafana_sso_organizational_units] # depends on the targer account, should passed as a parameter, e.g "r-qpwr"
+  organizational_units     = [var.grafana_sso_organizational_units]
   authentication_providers = ["AWS_SSO"]
   permission_type          = "SERVICE_MANAGED"
   role_arn                 = aws_iam_role.cf_logs_grafana_role.arn
@@ -510,18 +512,12 @@ resource "aws_grafana_workspace" "cf_grafana" {
 
 resource "aws_grafana_role_association" "cf_grafana_admins" {
   role         = "ADMIN"
-  user_ids     = [var.grafana_sso_admin_user_id] # depends on the targer account, should passed as a parameter, e.g. "90676a9ff8-0fb3fe58-d982-4a25-9ee5-c2a963784c5d"
+  user_ids     = [var.grafana_sso_admin_user_id]
   workspace_id = aws_grafana_workspace.cf_grafana.id
 }
 
 # Deploy clients
 resource "aws_lightsail_instance" "desktop-client-dub" {
-  #Providers should be defined statically as of yet, the following code doesn't work
-  #for_each = toset([for region in data.aws_regions.this.names : "aws.${region}"])
-  #provider = "aws.${each.value}"
-  #Doesn't work because region automatically is not switched for availability zone
-  #for_each = toset( ["eu-west-1a", "eu-central-1a", "us-east-1a"] )
-  #availability_zone = each.key
   provider = aws.eu-west-1
   name = "desktop-client-dub"
   blueprint_id      = "ubuntu_20_04"
