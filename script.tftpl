@@ -1,12 +1,14 @@
 cd /home/ubuntu/
 sudo apt update
-wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_107.0.5304.87-1_amd64.deb
-yes | sudo dpkg -i google-chrome-stable_107.0.5304.87-1_amd64.deb
+# Install Chrome: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
+wget http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_123.0.6312.122-1_amd64.deb
+yes | sudo dpkg -i google-chrome-stable_123.0.6312.122-1_amd64.deb
 sudo apt -f install -y
 sudo apt install python3-pip -y
 yes | pip3 install selenium
 yes | pip3 install requests -U
-wget https://chromedriver.storage.googleapis.com/107.0.5304.62/chromedriver_linux64.zip
+#Install Chromedriver: https://chromedriver.chromium.org/downloads
+wget https://storage.googleapis.com/chrome-for-testing-public/123.0.6312.122/linux64/chromedriver-linux64.zip
 sudo apt install unzip -y
 unzip chromedriver_linux64.zip
 sudo mv chromedriver /usr/bin/chromedriver
