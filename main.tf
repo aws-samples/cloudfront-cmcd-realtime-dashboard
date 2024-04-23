@@ -29,7 +29,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "origin" {
-  bucket_prefix = "cmcd-origin-"
+  bucket_prefix = "${var.solution_prefix}-origin"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
@@ -93,7 +93,7 @@ resource "aws_s3_bucket_policy" "origin" {
 
 # CloudFront Distribution
 resource "aws_cloudfront_origin_request_policy" "cmcd-origin-policy" {
-  name = "CMCD"
+  name = var.solution_prefix
   query_strings_config {
     query_string_behavior = "whitelist"
     query_strings {
@@ -120,7 +120,7 @@ resource "aws_cloudfront_origin_request_policy" "cmcd-origin-policy" {
 }
 
 resource "aws_cloudfront_distribution" "distribution" {
-  comment = "CMCD"
+  comment = var.solution_prefix
   origin {
     domain_name = aws_s3_bucket.origin.bucket_regional_domain_name
     origin_id   = "${var.solution_prefix}-origin"
@@ -166,7 +166,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 }
 
 resource "aws_kinesis_stream" "cf_real_time_logs" {
-  name = "${var.solution_prefix}-cf-real-time-logs-43fields"
+  name = "${var.solution_prefix}-cf-real-time-logs"
   stream_mode_details {
     stream_mode = "ON_DEMAND"
   }
@@ -501,7 +501,7 @@ resource "aws_iam_role_policy_attachment" "cf_logs_grafana_policy_attachment" {
 }
 
 resource "aws_grafana_workspace" "cf_grafana" {
-  name                     = "cf-grafana"
+  name                     = var.solution_prefix
   account_access_type      = "ORGANIZATION"
   organizational_units     = [var.grafana_sso_organizational_units]
   authentication_providers = ["AWS_SSO"]

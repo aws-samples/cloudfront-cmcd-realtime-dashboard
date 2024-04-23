@@ -105,7 +105,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -197,7 +197,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -370,7 +370,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -382,7 +382,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "hide": false,
           "measure": "MULTI",
@@ -395,7 +395,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "hide": false,
           "measure": "MULTI",
@@ -568,7 +568,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -580,7 +580,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "hide": false,
           "measure": "MULTI",
@@ -890,7 +890,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -1035,7 +1035,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -1047,7 +1047,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "hide": false,
           "measure": "MULTI",
@@ -1193,7 +1193,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "measure": "MULTI",
           "queryType": "raw",
@@ -1205,7 +1205,7 @@
           "database": "\"cmcd-db\"",
           "datasource": {
             "type": "grafana-timestream-datasource",
-            "uid": "k3vhKCaIz"
+            "uid": "9QEJvO8Vk"
           },
           "hide": false,
           "measure": "MULTI",
@@ -1309,7 +1309,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (c_country), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY c_country\nORDER BY CNT DESC",
         "hide": 0,
@@ -1333,7 +1333,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (asn), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY asn\nORDER BY CNT DESC",
         "hide": 0,
@@ -1395,7 +1395,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (x_edge_location), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY x_edge_location\nORDER BY CNT DESC",
         "hide": 0,
@@ -1419,7 +1419,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (x_edge_detailed_result_type), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY x_edge_detailed_result_type\nORDER BY CNT DESC",
         "hide": 0,
@@ -1443,7 +1443,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (sc_status), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY sc_status\nORDER BY CNT DESC",
         "hide": 0,
@@ -1467,7 +1467,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (x_host_header ), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY x_host_header \nORDER BY CNT DESC",
         "description": "The domain name of the CloudFront distribution",
@@ -1493,7 +1493,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (cmcd_streaming_format), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\n               AND cmcd_streaming_format is not NULL\nGROUP BY cmcd_streaming_format\nORDER BY CNT DESC",
         "hide": 0,
@@ -1517,7 +1517,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (cs_protocol), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY cs_protocol\nORDER BY CNT DESC",
         "hide": 0,
@@ -1541,7 +1541,7 @@
         },
         "datasource": {
           "type": "grafana-timestream-datasource",
-          "uid": "k3vhKCaIz"
+          "uid": "9QEJvO8Vk"
         },
         "definition": "SELECT DISTINCT (cs_protocol_version), count(*) AS CNT\nFROM $__database.$__table\nWHERE $__timeFilter\nGROUP BY cs_protocol_version\nORDER BY CNT DESC",
         "hide": 0,
