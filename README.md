@@ -1,89 +1,111 @@
 
 # Solution description
-This solution provides an example of how Common Media Client Data (**CMCD**) can be used with CloudFront, Amazon Timestream and Amazon Managed Grafana.
-A dashboard with pre-defined set of widgets build out of CloudFront logs enriched with CMCD metrics will be provisioned after installation.
-To generate some data for the dashboard, several clients running a media player are provisioned as well.
+
+This repository offers a demonstration of leveraging Common Media Client Data (**CMCD**) in conjunction with Amazon CloudFront, Amazon Timestream, and Amazon Managed Grafana. 
+Upon installation, it sets up a dashboard complete with predefined widgets, constructed from CloudFront logs enriched with CMCD metrics. 
+Additionally, it provisions multiple media player clients to generate data for the dashboard
 
 ![Solution diagram](./img/cmcd_arch.png)
 
+## Provisioned components
 
-The following componets are provisioned:
-
-- One HLS video asset hosted on S3.
+- An HLS video asset hosted on S3.
 - A web page hosting open source [HLS.js](https://github.com/video-dev/hls.js/) media player configured to play the video asset.
-- Several [LightSail](https://aws.amazon.com/lightsail) instances in different regions running a python script in infinitive loop that opens the web page and starts the playback.
-Instances simulate Mobile, Desktop and Smart TV clients.
-Additionally, to generate rebuffering events, one instance in France is throttled to 500 Kbps bandwidth making it difficult for smooth playback.
+- Several [LightSail](https://aws.amazon.com/lightsail) instances deployed across various AWS regions, emulating Mobile, Desktop, and Smart TV clients. These instances continuously run a Python script, opening the web page and initiating playback. One instance in France is bandwidth-throttled to 500 Kbps to simulate rebuffering events.
 - CloudFront distribution with Real-time logs that is used by clients to watch the video.
 - Kinesis Data Stream to send CloudFront logs to.
-- Lambda function to parse the logs and insert into Amazon Timestream.
+- Lambda function to parse the logs and insert them into Amazon Timestream.
 - Grafana to be used for logs visualisation/dashboarding.
 
-Since we are deploying 5 minutes HLS video asset it takes several minutes to clone the solution and also to install it.
+Since we are deploying 5 minutes long HLS video asset it takes several minutes to clone the solution and to install it.
 
-Dashboard is provided, but it needs to be uploaded manually (see below).
 There are two dashboards:
-- 'QoE' contains visualisation of most common video metrics: rebuffering, number of concurrent plays, average play duration and others.
+- "QoE" dashboard provides visualisation of most common video metrics: rebuffering, number of concurrent plays, average play duration and others.
 ![QoE dashboard](./img/qoe.png)
-- 'Troubleshooting' contains charts that are useful to find the root cause of rebuffering.
+- "Troubleshooting" provides charts that are useful to find the root cause of rebuffering.
 
-Both dashboards have Variables that can be used to filter in/out the data using various dimensions, e.g. Country, Device Type, Distribution, Streaming format etc.
+Both dashboards provide Variables that can be used to filter in/out the data using various dimensions, e.g. Country, Device Type, Distribution, Streaming format etc.
 
 ## Prerequisites 
 - Terrafrom 1.1.9+
 - A user in [AWS Identity and Access Management](https://aws.amazon.com/iam/identity-center/) and the [organizational unit](https://aws.amazon.com/organizations/) to be used for administrating Grafana dashboard 
-- AWS CLI with an active profile
+- AWS CLI
 
-## Provisioning
-- First, set up profile to be used to deploy solution, for example:
+## Solution deployment
+1. Choose AWS profile to be used to deploy solution, for example:
 
 `export AWS_PROFILE=CMCD-demo`
 
-- Zip Lambda function
+2. Zip Lambda function
 
 `cd lambda && zip -r cmcd-log-processor.zip cmcd-log-processor.py && cd ..`
 
-- Init Terraform
+3. Init Terraform
 
 `terraform init`
 
-Run Terraform with the following parameters: 
-1. `deploy-to-region` - where solution will be deployed. Should be an AWS region where Timestream and Grafana available
-2. `grafana_sso_organizational_units` - org unit ID to use for Grafana SSO authentication
-3. `grafana_sso_admin_user_id` - a user ID to use as Grafana admin
-4. `solution_prefix` - a unique prefix will be added to solution resource names
+4. Deploy the solution:
 
- Following variables are just examples:
 ```shell
 terraform apply \
--var "deploy-to-region=eu-west-1" \
--var "solution_prefix=cmcd" \
--var "grafana_sso_organizational_units=r-yejd" \
--var "grafana_sso_admin_user_id=f4c804b8-c011-702f-66d1-f98f8e8b08f5"
+  -var="deploy-to-region=<AWS_REGION>" \
+  -var="grafana_sso_organizational_units=<AWS_ORG_UNIT_ID>" \
+  -var="grafana_sso_admin_user_id=<ADMIN_USER_ID>" \
+  -var="solution_prefix=<SOLUTION_PREFIX>"
 ```
 
-If you encounter an error when deploying Lightsail instances:
+- `deploy-to-region`:  Specifies the AWS region where the solution will be deployed. Ensure that this region supports both Amazon Timestream and Grafana services.
+- `grafana_sso_organizational_units`: Specifies the AWS Organizational Unit ID to be used for Grafana Single Sign-On (SSO) authentication.
+- `grafana_sso_admin_user_id`: Specifies the user ID to be designated as the Grafana administrator.
+- `solution_prefix`:  Provides a unique prefix that will be appended to resource names created by the solution.
+
+**Note:** If you encounter the error message:
 ```
 Error: InvalidInputException: Sorry, your account can not create an instance using this Lightsail plan size. Please try a smaller plan size or contact Customer Support if you need to use a larger plan.
 ```
-In this case just re-run `terraform apply` again.
+You can resolve it by re-running the `terraform apply` command. 
+This error typically occurs when the Lightsail instance plan size is not compatible with your account settings. 
+By re-running the command, Terraform will attempt to deploy the instances again, and it may succeed on subsequent attempts.
 
-As yet, Amazon Grafana provisioning cannot be fully automated. Perform the following steps to complete installation:
+## Install the dashboard
+### Install the Amazon Timestream plugin in Amazon Grafana 9.4:
+* Open Grafana using the provided Grafana workspace URL.
+* Navigate to "Apps" -> "AWS Data Source". 
+* Select "Install now" for Timestream.
+* Click "Install".
 
-* Go to Grafana console, select *cf-grafana*, click *Assign new user or group*, select the user and click *assign users and groups*. Make sure the user has adming rights.
-* Open Grafana (*Grafana workspace URL*), select *Configuration* -> *Data sources* and click *Add data source*
-* Select *Amazon Timestream* as a data source, specify region used for provisining as *Default Region*
-* Select *cmcd-db* as *Database* and *cmcd-table* as *Table* and *MULTI* as *measure*. Click *Save and test*
-* Click plus sign in the left menu and select *import*
-* Click *Upload JSON file* to upload a dashboard. Select dashboard from [dashboards](./dashboards)
+### Configure Amazon Timestream datasource:
+* Navigate to "Administration" -> "Data Sources".  
+* Click "Add data source".
+* Select "Amazon Timestream".
+
+**Note:** If you encounter the error message:
+```
+Fetch error: 404 Not Found Instantiating ...
+```
+This indicates that the plugin installation has not yet been propagated across all Amazon Grafana servers. 
+In such cases, it's advisable to wait several more minutes before proceeding to the next step.
+
+* Choose the region used for provisioning as the "Default Region".
+* Select "cmcd-db" as the "Database".
+* Select "cmcd-table" as "Table".
+* Select "MULTI" as "Measure". 
+* Click "Save and test".
+
+### Upload CMCD dashboards:
+
+* Navigate to "Dashboards".
+* Select "New"-> "Import".
+* Select "Upload dashboard JSON file".
+* Select a dashboard from [dashboards](./dashboards)
 
 ## De-provisioning
 ```shell
-terraform destroy  \
--var "deploy-to-region=eu-west-1" \
--var "solution_prefix=cmcd" \
--var "grafana_sso_organizational_units=r-yejd" \
--var "grafana_sso_admin_user_id=f4c804b8-c011-702f-66d1-f98f8e8b08f5"
+terraform destroy \
+  -var="deploy-to-region=<AWS_REGION>" \
+  -var="grafana_sso_organizational_units=<AWS_ORG_UNIT_ID>" \
+  -var="grafana_sso_admin_user_id=<ADMIN_USER_ID>" \
+  -var="solution_prefix=<SOLUTION_PREFIX>"
 ```
 
 ## Dashboard walk-through.
