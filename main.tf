@@ -211,7 +211,7 @@ resource "aws_iam_role_policy" "cf_real_time_logs" {
 }
 
 resource "aws_cloudfront_realtime_log_config" "cf_real_time_logs" {
-  name          = "cf-real-time-logs"
+  name = var.solution_prefix
   sampling_rate = 100
   fields = [
     "timestamp",
@@ -508,6 +508,7 @@ resource "aws_grafana_workspace" "cf_grafana" {
   permission_type          = "SERVICE_MANAGED"
   role_arn                 = aws_iam_role.cf_logs_grafana_role.arn
   data_sources             = ["TIMESTREAM"]
+  configuration            = jsonencode({"plugins": {"pluginAdminEnabled": true}, "unifiedAlerting": {"enabled": false}})
 }
 
 resource "aws_grafana_role_association" "cf_grafana_admins" {
